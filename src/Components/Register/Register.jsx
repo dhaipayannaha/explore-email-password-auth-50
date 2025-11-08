@@ -1,12 +1,25 @@
-import React from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import React, { useState } from 'react';
+import { auth } from '../../../firebase.init';
 
 const Register = () => {
+    const [errorMassage, setErrorMassage] = useState()
 
     const handleRegister = e => {
         e.preventDefault()
         const email = e.target.email.value;
         const password = e.target.password.value;
         console.log(email, password);
+
+        setErrorMassage('')
+
+        createUserWithEmailAndPassword(auth, email, password)
+        .then(result => {
+            console.log(result)
+        })
+        .catch(error => {
+            setErrorMassage(error.message)
+        })
 
     }
 
@@ -56,9 +69,9 @@ const Register = () => {
                         name='password'
                         required
                         placeholder="Password"
-                        minLength="8"
-                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                        title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+                        // minLength="8"
+                        // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                        // title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
                     />
                 </label>
                 <p className="validator-hint hidden">
@@ -70,6 +83,9 @@ const Register = () => {
                 {/* submit button */}
                 <input className='btn btn-primary' type="submit" value="Submit" />
             </form>
+            {
+                errorMassage && <p className='text-red-500'>{errorMassage}</p>
+            }
         </div>
     );
 };
