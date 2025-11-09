@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { auth } from '../../../firebase.init';
 
 const Register = () => {
-    const [errorMassage, setErrorMassage] = useState()
+    const [success, setSuccess] = useState(false);
+    const [errorMassage, setErrorMassage] = useState('')
 
     const handleRegister = e => {
         e.preventDefault()
@@ -11,11 +12,13 @@ const Register = () => {
         const password = e.target.password.value;
         console.log(email, password);
 
+        setSuccess(false)
         setErrorMassage('')
 
         createUserWithEmailAndPassword(auth, email, password)
         .then(result => {
             console.log(result)
+            setSuccess(true)
         })
         .catch(error => {
             setErrorMassage(error.message)
@@ -85,6 +88,9 @@ const Register = () => {
             </form>
             {
                 errorMassage && <p className='text-red-500'>{errorMassage}</p>
+            }
+            {
+                success && <p className='text-green-500'>User has created successfully</p>
             }
         </div>
     );
