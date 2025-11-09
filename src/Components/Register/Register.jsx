@@ -1,8 +1,9 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../../../firebase.init';
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
+import { Link } from 'react-router';
 
 const Register = () => {
     const [success, setSuccess] = useState(false);
@@ -11,6 +12,8 @@ const Register = () => {
 
     const handleRegister = e => {
         e.preventDefault()
+        const name = e.target.name.value;
+        const photo = e.target.photo.value;
         const email = e.target.email.value;
         const password = e.target.password.value;
         const terms = e.target.terms.checked
@@ -19,7 +22,7 @@ const Register = () => {
         setSuccess(false)
         setErrorMassage('')
 
-        if(!terms){
+        if (!terms) {
             setErrorMassage('please accept terms and condition')
             return;
         }
@@ -34,12 +37,29 @@ const Register = () => {
 
         createUserWithEmailAndPassword(auth, email, password)
             .then(result => {
-                console.log(result)
-                setSuccess(true)
+                console.log(result);
+                sendEmailVerification(result.user)
+                    .then(() => {
+                        setSuccess(true);
+                        alert('Verification email has been sent to your inbox.');
+                    });
+
+                // update user profile
+                const profile = {
+                    displayName: name,
+                    photoURL: photo
+                }
+                updateProfile(auth.currentUser, profile)
+                .then(() => {
+                    console.log('user profile updated')
+                })
+                .catch(error => {
+                    console.log(error);
+                })
             })
             .catch(error => {
-                setErrorMassage(error.message)
-            })
+                setErrorMassage(error.message);
+            });
 
     }
 
@@ -48,8 +68,16 @@ const Register = () => {
         <div className='max-w-sm mx-auto mt-12'>
             <h3 className='text-2xl text-center mb-4 font-bold'>This is register</h3>
             <form className='space-y-5' onSubmit={handleRegister}>
-                {/* email field */}
+               
 
+                <label className="input validator join-item">
+                   
+                    <input type="text" name='name' placeholder="Enter yoyr name" />
+                </label>
+                <label className="input validator join-item">
+                   
+                    <input type="text" name='photo' placeholder="Photo url" />
+                </label>
                 <label className="input validator join-item">
                     <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <g
@@ -63,7 +91,7 @@ const Register = () => {
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                         </g>
                     </svg>
-                    <input type="email" name='email' placeholder="mail@site.com" required />
+                    <input type="email" name='email' placeholder="mail@site.com" />
                 </label>
                 <div className="validator-hint hidden">Enter valid email address</div>
                 <br />
@@ -114,6 +142,7 @@ const Register = () => {
                 {/* submit button */}
                 <input className='btn btn-primary' type="submit" value="Submit" />
             </form>
+            <p>Already have an account ? <Link to="/login">Login</Link></p>
             {
                 errorMassage && <p className='text-red-500'>{errorMassage}</p>
             }
