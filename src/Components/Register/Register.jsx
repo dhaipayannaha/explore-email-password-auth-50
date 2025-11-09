@@ -1,28 +1,45 @@
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../../../firebase.init';
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
 
 const Register = () => {
     const [success, setSuccess] = useState(false);
-    const [errorMassage, setErrorMassage] = useState('')
+    const [errorMassage, setErrorMassage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleRegister = e => {
         e.preventDefault()
         const email = e.target.email.value;
         const password = e.target.password.value;
+        const terms = e.target.terms.checked
         console.log(email, password);
 
         setSuccess(false)
         setErrorMassage('')
 
+        if(!terms){
+            setErrorMassage('please accept terms and condition')
+            return;
+        }
+
+
+        //password validation
+        const passwordRegExp = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+        if (passwordRegExp.test(password) === false) {
+            setErrorMassage('password must one lowercase one uppercase')
+            return;
+        }
+
         createUserWithEmailAndPassword(auth, email, password)
-        .then(result => {
-            console.log(result)
-            setSuccess(true)
-        })
-        .catch(error => {
-            setErrorMassage(error.message)
-        })
+            .then(result => {
+                console.log(result)
+                setSuccess(true)
+            })
+            .catch(error => {
+                setErrorMassage(error.message)
+            })
 
     }
 
@@ -52,7 +69,7 @@ const Register = () => {
                 <br />
 
                 {/* password field */}
-                <label className="input validator">
+                <label className="input validator relative">
                     <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <g
                             strokeLinejoin="round"
@@ -67,20 +84,31 @@ const Register = () => {
                             <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
                         </g>
                     </svg>
-                    <input
-                        type="password"
-                        name='password'
-                        required
-                        placeholder="Password"
+                    <div >
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name='password'
+                            required
+                            placeholder="Password"
                         // minLength="8"
                         // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                         // title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-                    />
+                        />
+                        <button onClick={() => setShowPassword(!showPassword)} className='btn btn-xs absolute right-4'>{
+                            showPassword ? <FaEye /> : <FaEyeSlash />
+                        }
+                        </button>
+                    </div>
                 </label>
                 <p className="validator-hint hidden">
                     Must be more than 8 characters, including
                     <br />At least one number <br />At least one lowercase letter <br />At least one uppercase letter
                 </p>
+                <br />
+                <label className="label">
+                    <input type="checkbox" name='terms' className="checkbox" />
+                    Remember me
+                </label>
                 <br />
 
                 {/* submit button */}
